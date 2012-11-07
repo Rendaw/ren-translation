@@ -1,0 +1,8 @@
+RenApplicationSources = {'../lightsettings.cxx', '../stringtable.cxx'}
+
+RenApplicationObjects = {}
+for Index, Source in ipairs(RenApplicationSources)
+do
+	table.insert(RenApplicationObjects, NormalizeSlashes(tup.getcwd()) .. '/' .. StripPath(Source) .. '.o')
+end
+
