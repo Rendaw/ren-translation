@@ -3,7 +3,8 @@
 #include <cassert>
 #include <iostream>
 
-#include <ren-script/script.h>
+#include "../ren-script/script.h"
+#include "../ren-script/databuilder.h"
 
 LightSettings::LightSettings(const String &Location) :
 	Filename(Location)
@@ -11,12 +12,13 @@ LightSettings::LightSettings(const String &Location) :
 
 void LightSettings::Save(void)
 {
-	OutputStream Out(Filename.c_str());
+	FileOutput Out(Filename.c_str());
 	Out << "return {\n";
 
-	for (std::map<String, String>::iterator CurrentValue = Values.begin();
-		CurrentValue != Values.end(); CurrentValue++)
-		Out << "\t[\"" << CurrentValue->first << "\"] = \"" << CurrentValue->second << "\",\n";
+	ScriptDataBuilder ScriptOut(Out, 1);
+
+	for (auto const &CurrentValue : Values)
+		ScriptOut.Key(CurrentValue.first).Value(CurrentValue.second);
 
 	Out << "}\n";
 }
@@ -26,14 +28,16 @@ void LightSettings::Refresh(void)
 	Values.clear();
 
 	Script In;
-	In.Do(Filename);
+	In.Do(Filename, true);
 
-	while (In.PullNext())
+	In.AssertTable("The settings file must return a table of settings.");
+	In.Iterate([this](Script &State) -> bool
 	{
-		String Value = In.GetString();
-		In.GrabValue(-1);
-		Values[In.GetString()] = Value;
-	}
+		String Value = State.GetString();
+		State.Duplicate(-1);
+		Values[State.GetString()] = Value;
+		return true;
+	});
 }
 
 void LightSettings::Unset(const String &Value)

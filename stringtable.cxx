@@ -1,12 +1,30 @@
 #include "stringtable.h"
 
-StringTable::StringTable(const String &Directory, const String &File)
+StringTable::StringTable(FilePath const &File)
 {
 	std::vector<std::pair<String, String> > Variables;
-	Variables.push_back(std::pair<String, String>("StringsLocation", Directory));
+	Variables.push_back(std::pair<String, String>("StringsLocation", File.Directory()));
+
 	Script Source;
-	Source.RegisterFunction("String", extString, this);
-	Source.Do(Directory + File, Variables);
+
+	for (auto &Variable : Variables)
+	{
+		Source.PushString(Variable.second);
+		Source.SaveGlobal(Variable.first);
+	}
+
+	Source.PushTable();
+	Source.PushFunction([&](Script &State) -> int
+	{
+		State.AssertString("String takes a string as its first argument.");
+		String To = State.GetString();
+		State.AssertString("String takes a string as its first argument.");
+		Add(State.GetString(), To);
+		return 0;
+	});
+	Source.PutElement("String");
+
+	Source.Do(File, true);
 }
 
 String StringTable::operator ()(const String &Name) const
@@ -19,12 +37,3 @@ String StringTable::operator ()(const String &Name) const
 void StringTable::Add(const String &From, const String &To)
 	{ Translations[From] = To; }
 
-int StringTable::extString(lua_State *StateSource)
-{
-	Script State(StateSource);
-
-	String To = State.GetString();
-	((StringTable *)State.GetAssociatedData())->Add(State.GetString(), To);
-
-	return 0;
-}

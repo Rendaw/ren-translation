@@ -3,7 +3,8 @@
 
 #include <map>
 
-#include <ren-general/string.h>
+#include "../ren-general/string.h"
+#include "../ren-general/inputoutput.h"
 
 class LightSettings
 {
@@ -17,16 +18,14 @@ class LightSettings
 		{
 			if (Values.find(Name) == Values.end()) return Default;
 
-			StringStream Conversion(Values[Name]);
-			Type Out; Conversion >> Out;
+			Type Out; 
+			MemoryStream(Values[Name]) >> Out;
 			return Out;
 		}
 
 		template <typename Type> void Set(const String &Name, const Type &NewValue)
 		{
-			StringStream Conversion;
-			Conversion << NewValue;
-			Values[Name] = Conversion.str();
+			Values[Name] = MemoryStream() << NewValue;
 		}
 
 		void Unset(const String &Value);
