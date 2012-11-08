@@ -30,14 +30,14 @@ void LightSettings::Refresh(void)
 	Script In;
 	In.Do(Filename, true);
 
-	In.AssertTable("The settings file must return a table of settings.");
-	In.Iterate([this](Script &State) -> bool
-	{
-		String Value = State.GetString();
-		State.Duplicate(-1);
-		Values[State.GetString()] = Value;
-		return true;
-	});
+	if ((In.Height() > 0) && In.IsTable())
+		In.Iterate([this](Script &State) -> bool
+		{
+			String Value = State.GetString();
+			State.Duplicate(-1);
+			Values[State.GetString()] = Value;
+			return true;
+		});
 }
 
 void LightSettings::Unset(const String &Value)

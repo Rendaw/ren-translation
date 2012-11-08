@@ -23,6 +23,7 @@ StringTable::StringTable(FilePath const &File)
 		return 0;
 	});
 	Source.PutElement("String");
+	Source.SaveGlobal("ext");
 
 	Source.Do(File, true);
 }
