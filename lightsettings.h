@@ -18,8 +18,8 @@ class LightSettings
 		{
 			if (Values.find(Name) == Values.end()) return Default;
 
-			Type Out; 
-			MemoryStream(Values[Name]) >> Out;
+			Type Out = Default; 
+			(void) (MemoryStream(Values[Name]) >> Out);
 			return Out;
 		}
 
