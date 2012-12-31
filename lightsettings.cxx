@@ -12,7 +12,7 @@ LightSettings::LightSettings(const String &Location) :
 
 void LightSettings::Save(void)
 {
-	FileOutput Out(Filename.c_str());
+	FileOutput Out(Filename.c_str(), FileOutput::Modes::Erase);
 	Out << "return {\n";
 
 	ScriptDataBuilder ScriptOut(Out, 1);
@@ -20,7 +20,7 @@ void LightSettings::Save(void)
 	for (auto const &CurrentValue : Values)
 		ScriptOut.Key(CurrentValue.first).Value(CurrentValue.second);
 
-	Out << "}\n";
+	Out << "\n}\n";
 }
 
 void LightSettings::Refresh(void)
