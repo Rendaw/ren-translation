@@ -1,31 +1,59 @@
 #ifndef translation_h
 #define translation_h
 
+#include <libintl.h>
+#include <locale.h>
+#include <limits>
+
+#include "ren-general/inputoutput.h"
+#include "ren-general/range.h"
+
+void InitializeTranslation(String const &PackageName);
+bool IsTranslationInitialized(void);
+
 constexpr unsigned int HexPlaces(unsigned int Input)
 {
-	return Input > 0 ? 1 + HexPlaces(Input >> 1) : 0;
+	return Input >= 16 ? 1 + HexPlaces(Input >> 4) : 1;
+}
+
+inline unsigned int ReadHex(String const &Input)
+{
+	unsigned int Out = 0;
+	for (char const &Place : Input)
+	{
+		Out = Out << 4;
+		if (RangeD('0', '9').Contains(Place))
+			Out += Place - '0';
+		else if (RangeD('a', 'f').Contains(Place))
+			Out += Place - 'a' + 10;
+		else if (RangeD('A', 'F').Contains(Place))
+			Out += Place - 'A' + 10;
+		else assert(false);
+	}
+	return Out;
 }
 
 // Convert multiple variables into an array of strings
-void AsString(std::vector<String &Out) { }
+inline void AsStringVector(std::vector<String> &Out) { }
 
-template <typename NextArgumentType, typename... ArgumentTypes> void AsString(std::vector<String> &Out, NextArgumentType NextArgument, ArgumentTypes... Arguments)
+template <typename NextArgumentType, typename ...ArgumentTypes> void AsStringVector(std::vector<String> &Out, NextArgumentType NextArgument, ArgumentTypes ...Arguments)
 {
 	Out.push_back(AsString(NextArgument));
-	AsString(Out, Arguments...);
+	AsStringVector(Out, Arguments...);
 }
 
-template <typename... ArgumentTypes> std::vector<String> AsString(ArgumentTypes... const &Arguments)
+template <typename ...ArgumentTypes> std::vector<String> AsStringVector(ArgumentTypes const & ...Arguments)
 {
 	std::vector<String> Out;
 	Out.reserve(sizeof...(ArgumentTypes));
-	AsString(Out, Arguments...);
+	AsStringVector(Out, Arguments...);
 	return Out;
 }
 
 // Translate value with 
-template <typename... ArgumentTypes> String Local(String const &Input, ArgumentTypes... Arguments)
+template <typename ...ArgumentTypes> String Local(String const &Input, ArgumentTypes const & ...Arguments)
 {
+	assert(IsTranslationInitialized());
 	constexpr unsigned int Places = HexPlaces(sizeof...(ArgumentTypes));
 
 	String LocalString = gettext(Input.c_str());
@@ -36,22 +64,22 @@ template <typename... ArgumentTypes> String Local(String const &Input, ArgumentT
 #ifndef NDEBUG
 	for (unsigned int Index = 0; Index < sizeof...(ArgumentTypes); ++Index)
 	{
-		MemoryStream Marker("\\");
+		MemoryStream Marker("^");
 		Marker << OutputStream::StringHex(Index).PadTo(Places);
-		assert(Input.find(Marker.str()) < Input.size());
+		assert(Input.find((String)Marker) < Input.size());
 	}
 #endif
 
-	std::vector<String> Replacements = AsString(Arguments...);
+	std::vector<String> Replacements = AsStringVector(Arguments...);
 	unsigned int NewLength = 0;
 	for (auto const &Replacement : Replacements)
 		NewLength += Replacement.length();
 	MemoryStream Out(NewLength + LocalString.length()), Number;
 
 	size_t Position = 0, LastPosition = 0;
-	while (Position = LocalString.find('\\', Position) <= LocalString.size() - (Places + 1))
+	while ((Position = LocalString.find('^', Position)) <= (LocalString.size() - (Places + 1)))
 	{
-		if (LocalString[Position + 1] == '\\')
+		if (LocalString[Position + 1] == '^')
 		{
 			// Allow escapes
 			Position += 2;
@@ -60,14 +88,11 @@ template <typename... ArgumentTypes> String Local(String const &Input, ArgumentT
 
 		// Add the unchanged part of the string
 		Out << LocalString.substr(LastPosition, Position - LastPosition);
-		IndexString = LocalString.substr(Position + 1, Places);
 
 		// Add the marker replacement
-		unsigned int Index; 
-		IndexString >> Index; 
+		unsigned int Index = ReadHex(LocalString.substr(Position + 1, Places));
 		assert(Index < sizeof...(ArgumentTypes));
-
-		Out << Replacements[IndexString];
+		Out << Replacements[Index];
 
 		LastPosition = Position += Places + 1;
 	}
