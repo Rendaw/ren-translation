@@ -1,8 +1,8 @@
-RenApplicationSources = {'../lightsettings.cxx', '../translation.cxx'}
+RenTranslationSources = {'../translation.cxx'}
 
-RenApplicationObjects = {}
-for Index, Source in ipairs(RenApplicationSources)
+RenTranslationObjects = {}
+for Index, Source in ipairs(RenTranslationSources)
 do
-	table.insert(RenApplicationObjects, NormalizeSlashes(tup.getcwd()) .. '/' .. StripPath(Source) .. '.o')
+	table.insert(RenTranslationObjects, NormalizeSlashes(tup.getcwd()) .. '/' .. StripPath(Source) .. '.o')
 end
 

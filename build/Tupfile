@@ -1,7 +1,7 @@
 tup.dorulesfile()
 tup.dofile 'files.tup'
 
-for Index, Source in ipairs(RenApplicationSources)
+for Index, Source in ipairs(RenTranslationSources)
 do
 	Rule.Object(Source)
 end
