@@ -5,8 +5,8 @@
 #include <locale.h>
 #include <limits>
 
-#include "ren-general/inputoutput.h"
-#include "ren-general/range.h"
+#include "../ren-general/inputoutput.h"
+#include "../ren-general/range.h"
 
 void InitializeTranslation(String const &PackageName);
 bool IsTranslationInitialized(void);
@@ -34,7 +34,7 @@ inline unsigned int ReadHex(String const &Input)
 }
 
 // Convert multiple variables into an array of strings
-inline void AsStringVector(std::vector<String> &Out) { }
+inline void AsStringVector(std::vector<String> &) { }
 
 template <typename NextArgumentType, typename ...ArgumentTypes> void AsStringVector(std::vector<String> &Out, NextArgumentType NextArgument, ArgumentTypes ...Arguments)
 {
