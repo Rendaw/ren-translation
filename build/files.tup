@@ -1,8 +1,0 @@
-RenTranslationSources = {'../translation.cxx'}
-
-RenTranslationObjects = {}
-for Index, Source in ipairs(RenTranslationSources)
-do
-	table.insert(RenTranslationObjects, NormalizeSlashes(tup.getcwd()) .. '/' .. StripPath(Source) .. '.o')
-end
-
