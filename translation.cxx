@@ -2,7 +2,7 @@
 
 bool Initialized = false;
 
-void InitializeTranslation(String const &PackageName)
+void InitializeTranslation(std::string const &PackageName)
 {
 	assert(Initialized == false);
 	setlocale(LC_ALL, "");
