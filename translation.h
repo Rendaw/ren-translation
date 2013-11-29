@@ -68,7 +68,7 @@ template <typename ...ArgumentTypes> std::string Local(std::string const &Input,
 #ifndef NDEBUG
 	// All markers must appear at least once in the template string
 	{
-		size_t Position = 0, LastPosition = 0;
+		size_t Position = 0;
 		std::set<unsigned int> Found;
 		while ((Position = Input.find('^', Position)) <= (Input.size() - (Places + 1)))
 		{
@@ -81,7 +81,7 @@ template <typename ...ArgumentTypes> std::string Local(std::string const &Input,
 			unsigned int Index = ReadHex(LocalString.substr(Position + 1, Places));
 			assert(Index < sizeof...(ArgumentTypes));
 			Found.emplace(Index);
-			LastPosition = Position += Places + 1;
+			Position += Places + 1;
 		}
 		for (unsigned int Index = 0; Index < sizeof...(ArgumentTypes); ++Index)
 			assert(Found.find(Index) != Found.end());
